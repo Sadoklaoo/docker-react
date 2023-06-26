@@ -33,10 +33,10 @@ jobs:
       - name: Create new ElasticBeanstalk Application Version
         run: |
           aws elasticbeanstalk create-application-version \
-          --application-name Frontend \
+          --application-name Docker-react \
           --source-bundle S3Bucket="my-docker-bucket-sadok",S3Key="deploy.zip" \
           --version-label "ver-${{ github.sha }}" \
           --description "commit-sha-${{ github.sha }}"
 
       - name: Deploy new ElasticBeanstalk Application Version
-        run: aws elasticbeanstalk update-environment --environment-name Frontend-env-1 --version-label "ver-${{ github.sha }}"
+        run: aws elasticbeanstalk update-environment --environment-name Docker-react-env --version-label "ver-${{ github.sha }}"
