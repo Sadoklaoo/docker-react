@@ -16,14 +16,24 @@ jobs:
       - name: Generate deployment package
         run: zip -r deploy.zip . -x '*.git*'
  
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v21
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-          application_name: React-docker
-          environment_name: React-docker-env
-          existing_bucket_name: elasticbeanstalk-eu-west-3-597271455666
-          region: us-east-3
-          version_label: ${{ github.sha }}
-          deployment_package: deploy.zip
+          aws_access_key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: "us-east-3"
+
+
+      - name: Upload package to S3 bucket
+        run: aws s3 cp deploy.zip s3://elasticbeanstalk-eu-west-3-597271455666/
+
+      - name: Create new ElasticBeanstalk Application Version
+        run: |
+          aws elasticbeanstalk create-application-version \
+          --application-name Frontend \
+          --source-bundle S3Bucket="elasticbeanstalk-eu-west-3-597271455666",S3Key="deploy.zip" \
+          --version-label "ver-${{ github.sha }}" \
+          --description "commit-sha-${{ github.sha }}"
+
+      - name: Deploy new ElasticBeanstalk Application Version
+        run: aws elasticbeanstalk update-environment --environment-name Frontend-env-1 --version-label "ver-${{ github.sha }}"
